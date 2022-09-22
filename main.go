@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"os"
 	"time"
-
+	"net/http"
 	"github.com/go-vk-api/vk"
 )
 
@@ -55,6 +55,7 @@ func sendJoke() {
 }
 
 func main() {
+	go http.ListenAndServe(":8000", nil)
 	post_ticker := time.NewTicker(time.Hour * 3)
 	sendJoke()
 	for {
