@@ -113,11 +113,17 @@ func main() {
 	decoder := gob.NewDecoder(file)
 	decoder.Decode(&Jokes)
 	post_ticker := time.NewTicker(time.Hour * 3)
+	request_ticker := time.NewTicker(time.Minute * 5)
 	sendJoke()
 	for {
 		select {
 		case <-post_ticker.C:
 			sendJoke()
+		case <-request_ticker.C:
+			_, err := http.Get("https://shutnik.herokuapp.com/")
+			if err != nil {
+				log.Println(err)
+			}
 		}
 		time.Sleep(time.Second * 5)
 	}
