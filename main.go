@@ -19,7 +19,7 @@ var (
 
 	Jokes     []string
 	Client    *vk.Client
-	JokesChan chan string
+	JokesChan = make(chan string)
 )
 
 func getRandomJoke(jokes []string) string {
