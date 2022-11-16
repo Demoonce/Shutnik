@@ -41,16 +41,18 @@ func main() {
 	// Check if file already exists
 	if _, err := os.Stat("jokes.gob"); err != nil {
 		Jokes = ParseJokes()
+		WriteJokes(Jokes)
 	}
-	WriteJokes(Jokes)
 	file, err := os.Open("jokes.gob")
 	if err != nil {
 		log.Fatalln(err)
 	}
 	defer file.Close()
 	decoder := gob.NewDecoder(file)
-	decoder.Decode(&Jokes)
-
+	err = decoder.Decode(&Jokes)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	post_ticker := time.NewTicker(time.Hour * 3)
 	sendJoke()
 	for {

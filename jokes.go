@@ -15,6 +15,7 @@ import (
 )
 
 func getRandomJoke(jokes []string) string {
+	log.Println(jokes)
 	num, err := rand.Int(rand.Reader, big.NewInt(int64(len(jokes))))
 	if err != nil {
 		log.Fatalln(err)
@@ -22,10 +23,10 @@ func getRandomJoke(jokes []string) string {
 	return jokes[num.Int64()]
 }
 
-func getJokesPage(url string) {
+func getJokesPage(url string, jokes_chan chan<- string) {
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
 		return
 	}
 	jokes, err := goquery.NewDocumentFromResponse(resp)
@@ -34,7 +35,7 @@ func getJokesPage(url string) {
 		return
 	}
 	jokes.Find("div.text").Each(func(i int, s *goquery.Selection) {
-		Jokes = append(Jokes, s.Text())
+		jokes_chan <- s.Text()
 	})
 }
 
@@ -42,16 +43,16 @@ func ParseJokes() []string {
 	jokes := make([]string, 0, 1000)
 	for a := 1; a < 500; a++ {
 		time.Sleep(time.Millisecond * 10)
-		go getJokesPage(fmt.Sprintf("https://nekdo.ru/short/%d", a))
+		go getJokesPage(fmt.Sprintf("https://nekdo.ru/short/%d", a), JokesChan)
 	}
 loop:
 	for {
 		select {
-		case <-time.NewTimer(time.Second * 5).C:
+		case <-time.After(time.Second * 5):
 			close(JokesChan)
 			break loop
 		case a := <-JokesChan:
-			jokes = append(Jokes, a)
+			jokes = append(jokes, a)
 		}
 	}
 	return jokes
